@@ -1,4 +1,8 @@
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 import psycopg
 
 try:
@@ -6,7 +10,8 @@ try:
         host="localhost",
         dbname="sales_intelligence",
         user="postgres",
-        password="@Itsrajgupta062006",
+        
+password=os.getenv("DB_PASSWORD"),
         port=5432
     ) as conn:
         print("PostgreSQL connected successfully!")

@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+print("DB password loaded:", bool(os.getenv("DB_PASSWORD")))
+
 app = FastAPI()
 
 # Load trained ML model
