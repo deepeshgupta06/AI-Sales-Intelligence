@@ -1,4 +1,5 @@
 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Query
 import joblib
 import psycopg
@@ -11,6 +12,14 @@ load_dotenv()
 print("DB password loaded:", bool(os.getenv("DB_PASSWORD")))
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load trained ML model
 model = joblib.load("sales_model.pkl")
@@ -124,10 +133,11 @@ def predict_sales(
         "predicted_sales": predicted_sales,
         "message": "Prediction saved successfully!"
     }
-
-
 @app.get("/history")
-def get_prediction_history():
+def get_prediction_history(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100)
+):
     with psycopg.connect(
         host=os.getenv("DB_HOST"),
         dbname=os.getenv("DB_NAME"),
@@ -136,16 +146,24 @@ def get_prediction_history():
         port=int(os.getenv("DB_PORT", "5432"))
     ) as conn:
         rows = conn.execute(
-            """
-            SELECT id, product, region, quantity, price,
-                   marketing_spend, predicted_sales, created_at
-            FROM prediction_history
-            ORDER BY id DESC
-            LIMIT 20
-            """
-        ).fetchall()
+    """
+    SELECT id, product, region, quantity, price,
+           marketing_spend, predicted_sales, created_at
+    FROM prediction_history
+    ORDER BY id DESC
+    LIMIT %s OFFSET %s
+    """,
+    (page_size, (page - 1) * page_size)
+).fetchall()
 
-    return [
+        total_records = conn.execute(
+    "SELECT COUNT(*) FROM prediction_history"
+).fetchone()[0]
+        return {
+    "total_records": total_records,
+    "page": page,
+    "page_size": page_size,
+    "records": [
         {
             "id": row[0],
             "product": row[1],
@@ -158,3 +176,4 @@ def get_prediction_history():
         }
         for row in rows
     ]
+}
