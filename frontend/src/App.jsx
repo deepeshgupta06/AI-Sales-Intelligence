@@ -135,7 +135,7 @@ const filteredHistory = history.filter((item) => {
     try {
       const params = new URLSearchParams(form);
       const response = await fetch(
-        `http://127.0.0.1:8000/predict?${params.toString()}`,
+        `https://ai-sales-intelligence-qip6.onrender.com/predict?${params.toString()}`,
         { method: "POST" }
       );
 
@@ -162,7 +162,7 @@ const filteredHistory = history.filter((item) => {
 async function loadHistory(page = 1) {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/history?page=${page}&page_size=20`
+      `https://ai-sales-intelligence-qip6.onrender.com/history?page=${page}&page_size=20`
     );
 
     if (!response.ok) {
