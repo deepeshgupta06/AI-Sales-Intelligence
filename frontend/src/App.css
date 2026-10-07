@@ -1369,3 +1369,56 @@ footer span {
       inset 0 1px 1px rgba(255, 255, 255, 0.32);
   }
 }
+
+/* =========================
+   PREMIUM LOGOUT BUTTON
+========================= */
+
+.logout-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 17px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+
+  background: rgba(239, 68, 68, 0.10);
+
+  color: #fca5a5;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 18px rgba(239, 68, 68, 0.08);
+
+  transition: all 0.25s ease;
+}
+
+.logout-btn::before {
+  content: "↪";
+  font-size: 17px;
+  line-height: 1;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+
+  border-color: rgba(248, 113, 113, 0.65);
+
+  color: #fecaca;
+
+  box-shadow:
+    0 0 22px rgba(239, 68, 68, 0.18);
+
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}

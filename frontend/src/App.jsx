@@ -530,6 +530,12 @@ async function loadHistory(page = 1) {
           <p>Machine Learning · Sales Prediction</p>
         </div>
         <span className="status"><span /> Dashboard</span>
+
+
+        <button className="logout-btn" onClick={handleLogout}>
+  Logout
+</button>
+
       </header>
 
       <section className="welcome">
