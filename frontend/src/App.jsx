@@ -154,7 +154,7 @@ const filteredHistory = history.filter((item) => {
       
       
       const response = await fetch(
-  `http://127.0.0.1:8000/predict?${params.toString()}`,
+  `https://ai-sales-intelligence-qip6.onrender.com/predict?${params.toString()}`,
   {
     method: "POST",
   }
@@ -183,7 +183,7 @@ const filteredHistory = history.filter((item) => {
 async function loadHistory(page = 1) {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/history?page=${page}&page_size=20&token=${encodeURIComponent(token)}`
+      `https://ai-sales-intelligence-qip6.onrender.com/history?page=${page}&page_size=20&token=${encodeURIComponent(token)}`
     );
 
     if (!response.ok) {
@@ -208,7 +208,7 @@ async function loadHistory(page = 1) {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/register"
+        "https://ai-sales-intelligence-qip6.onrender.com/register"
           ,{
           method: "POST",
           headers: {
@@ -247,7 +247,7 @@ async function loadHistory(page = 1) {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/login",
+        "https://ai-sales-intelligence-qip6.onrender.com/login",
         {
           method: "POST",
           headers: {
