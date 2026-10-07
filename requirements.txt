@@ -6,3 +6,5 @@ scikit-learn
 joblib
 psycopg[binary]
 python-dotenv
+bcrypt
+PyJWT

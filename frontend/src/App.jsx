@@ -12,6 +12,18 @@ import {
 import "./App.css";
 
 function App() {
+
+    const [token, setToken] = useState(
+    localStorage.getItem("access_token") || ""
+  );
+
+  const [username, setUsername] = useState(
+    localStorage.getItem("username") || ""
+  );
+
+  const [showRegister, setShowRegister] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({
     product: "Laptop",
     region: "North",
@@ -36,9 +48,11 @@ const [regionFilter, setRegionFilter] = useState("All");
 const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
 
- useEffect(() => {
-  loadHistory(currentPage);
-}, [currentPage]);
+   useEffect(() => {
+  if (token) {
+    loadHistory(currentPage);
+  }
+}, [currentPage, token]);
 
 
 const exportToCSV = () => {
@@ -134,10 +148,17 @@ const filteredHistory = history.filter((item) => {
 
     try {
       const params = new URLSearchParams(form);
+
+      params.append("token", token);
+
+      
+      
       const response = await fetch(
-        `https://ai-sales-intelligence-qip6.onrender.com/predict?${params.toString()}`,
-        { method: "POST" }
-      );
+  `http://127.0.0.1:8000/predict?${params.toString()}`,
+  {
+    method: "POST",
+  }
+);
 
       const data = await response.json();
 
@@ -162,7 +183,7 @@ const filteredHistory = history.filter((item) => {
 async function loadHistory(page = 1) {
   try {
     const response = await fetch(
-      `https://ai-sales-intelligence-qip6.onrender.com/history?page=${page}&page_size=20`
+      `http://127.0.0.1:8000/history?page=${page}&page_size=20&token=${encodeURIComponent(token)}`
     );
 
     if (!response.ok) {
@@ -177,8 +198,331 @@ async function loadHistory(page = 1) {
   }
 }
 
+  async function handleRegister(event) {
+    event.preventDefault();
+    setError("");
+
+    const username = event.target.username.value;
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/register"
+          ,{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Registration failed");
+      }
+
+      setShowRegister(false);
+      setError("");
+      alert("Account created successfully! Please login.");
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+    
+
+  async function handleLogin(event) {
+    event.preventDefault();
+    setError("");
+
+    const username = event.target.username.value;
+    const password = event.target.password.value;
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Login failed");
+      }
+
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("username", data.username);
+
+      setToken(data.access_token);
+      setUsername(data.username);
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("username");
+
+    setToken("");
+    setUsername("");
+    setHistory([]);
+    setResult(null);
+  }
+
   return (
-    <main className="dashboard">
+   <>
+      {!token ? (
+  <main className="auth-page">
+    <div className="auth-background-glow glow-one"></div>
+    <div className="auth-background-glow glow-two"></div>
+
+    <section className="auth-container">
+
+      {/* LEFT BRANDING */}
+      <div className="auth-brand">
+        <div className="auth-logo">AI</div>
+
+        <p className="auth-eyebrow">INTELLIGENT SALES ANALYTICS</p>
+
+        <h1>
+          Turn your sales data into
+          <span> smarter decisions.</span>
+        </h1>
+
+        <p className="auth-description">
+          AI-powered sales prediction and analytics platform
+          designed to help you understand your business better.
+        </p>
+
+        <div className="auth-features">
+          <div className="auth-feature">
+            <div className="feature-icon">↗</div>
+            <div>
+              <strong>Sales Prediction</strong>
+              <span>Generate ML-based sales forecasts</span>
+            </div>
+          </div>
+
+          <div className="auth-feature">
+            <div className="feature-icon">◈</div>
+            <div>
+              <strong>Smart Analytics</strong>
+              <span>Understand your prediction history</span>
+            </div>
+          </div>
+
+          <div className="auth-feature">
+            <div className="feature-icon">⚡</div>
+            <div>
+              <strong>Data Driven</strong>
+              <span>Make better business decisions</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LOGIN / REGISTER CARD */}
+      <div className="auth-card">
+
+        <div className="auth-card-header">
+          <div className="auth-card-icon">
+            {showRegister ? "✦" : "→"}
+          </div>
+
+          <p className="auth-card-label">
+            {showRegister ? "CREATE ACCOUNT" : "WELCOME BACK"}
+          </p>
+
+          <h2>
+            {showRegister ? "Create your account" : "Sign in to continue"}
+          </h2>
+
+          <p>
+            {showRegister
+              ? "Start exploring intelligent sales predictions."
+              : "Access your personalized Sales Intelligence dashboard."}
+          </p>
+        </div>
+
+        {!showRegister ? (
+          <>
+            <form onSubmit={handleLogin} className="auth-form">
+
+              <label>
+                Username
+                <div className="auth-input-wrapper">
+                  <span>◉</span>
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+              </label>
+
+              <label>
+                Password
+                <div className="auth-input-wrapper">
+                  <span>●</span>
+
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword((value) => !value)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </label>
+
+              <button className="auth-submit" type="submit">
+                <span>Sign in</span>
+                <span>→</span>
+              </button>
+
+            </form>
+
+            <div className="auth-switch">
+              <span>Don't have an account?</span>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRegister(true);
+                  setError("");
+                  setShowPassword(false);
+                }}
+              >
+                Create one
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <form onSubmit={handleRegister} className="auth-form">
+
+              <label>
+                Username
+                <div className="auth-input-wrapper">
+                  <span>◉</span>
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Choose a username"
+                    required
+                  />
+                </div>
+              </label>
+
+              <label>
+                Email
+                <div className="auth-input-wrapper">
+                  <span>@</span>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+              </label>
+
+              <label>
+                Password
+                <div className="auth-input-wrapper">
+                  <span>●</span>
+
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword((value) => !value)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </label>
+
+              <button className="auth-submit" type="submit">
+                <span>Create account</span>
+                <span>→</span>
+              </button>
+
+            </form>
+
+            <div className="auth-switch">
+              <span>Already have an account?</span>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRegister(false);
+                  setError("");
+                  setShowPassword(false);
+                }}
+              >
+                Sign in
+              </button>
+            </div>
+          </>
+        )}
+
+        {error && (
+          <div className="auth-error">
+            {error}
+          </div>
+        )}
+
+        <div className="auth-footer">
+          <span>AI Sales Intelligence</span>
+          <span>•</span>
+          <span>ML Powered</span>
+        </div>
+
+      </div>
+    </section>
+  </main>
+) : (
+
+  
+
+            
+
+        <main className="dashboard">
       <header className="topbar">
         <div className="brand-icon">AI</div>
         <div>
@@ -520,7 +864,10 @@ async function loadHistory(page = 1) {
         AI Sales Intelligence <span>•</span> Predictions depend on the trained
         model and the data it learned from.
       </footer>
-    </main>
+           </main>
+)}
+      
+    </>
   );
 }
 
